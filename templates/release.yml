@@ -1,0 +1,49 @@
+# Шаблон релизного workflow плагина berimor.
+# Сборка → архив (бинарник + manifest.yaml) → подпись sigstore → Release.
+# Требования: публичный репозиторий (keyless sigstore), теги v*.*.*.
+name: Release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: write
+  id-token: write # OIDC для keyless-подписи
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # 1. Соберите бинарник плагина (пример — статический бинарник).
+      #    Замените на свою сборку: cargo build --release, go build и т.п.
+      - name: Build
+        run: |
+          # пример-заглушка: бинарником может быть любой исполняемый файл
+          printf '#!/bin/sh\necho "{\"content\": \"Привет от hello-tool\"}"\n' > hello-tool
+          chmod +x hello-tool
+
+      # 2. Архив: бинарник + манифест — ОДНИМ артефактом, одна подпись.
+      - name: Pack
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          tar -czf "hello-tool-v${VERSION}-linux-x64.tar.gz" \
+            hello-tool templates/manifest.yaml
+
+      # 3. Подпись sigstore (keyless — OIDC этого workflow и есть
+      #    идентичность подписанта, которую пинит trust-список berimor).
+      - name: Sign
+        uses: sigstore/cosign-installer@v3
+      - name: Sign archive
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          cosign sign-blob --yes \
+            --bundle "hello-tool-v${VERSION}-linux-x64.tar.gz.sigstore.json" \
+            "hello-tool-v${VERSION}-linux-x64.tar.gz"
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: hello-tool-v*-linux-x64.tar.gz*

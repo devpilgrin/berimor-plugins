@@ -1,0 +1,8 @@
+name: hello-tool
+version: 0.1.0
+description: Пример плагина — приветствие как инструмент
+capabilities:
+  tools:
+    - name: hello.greet
+      description: Печатает приветствие
+      mutates: false
