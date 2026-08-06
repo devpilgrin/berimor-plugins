@@ -1,3 +1,11 @@
+<div align="center">
+
+<img src="assets/logo.png" alt="Berimor" width="640">
+
+**[Русский](README.md)** · [English](README.en.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md)
+
+</div>
+
 # berimor-plugins
 
 Плагины-процессы для [berimor](https://github.com/devpilgrin/berimor). Плагин —
